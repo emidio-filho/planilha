@@ -1,0 +1,174 @@
+<script>
+  var datags = <?!= JSON.stringify(data) ?>;
+//  console.log(datags);
+</script>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>  
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <style>
+    input[type=checkbox] {
+      /* Double-sized Checkboxes */
+      -ms-transform: scale(1.5);
+      /* IE */
+      -moz-transform: scale(1.5);
+      /* FF */
+      -webkit-transform: scale(1.5);
+      /* Safari and Chrome */
+      -o-transform: scale(1.5);
+      /* Opera */
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h4 type="text" id="cab"></h4>
+  <div>
+    <button class="btn btn-primary" id="enviar">Enviar<i class="material-icons right"></i>
+    </button>
+    <button class="btn btn-primary" id="cancelar" onClick="closeIt()">Cancelar
+    </button>
+  </div>
+  <br>
+  <table id="myTable" class="table-sm">
+    <tr>
+      <th><input id="selecionar" type = "checkbox" checked = "checked"></th>
+      <th>NOME DO ALUNO</th>
+    </tr>
+  </table>
+
+  <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive"
+    aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Selecione pelo menos um aluno.
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+
+  <!-- <div class="d-flex justify-content-center text-primary">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden"></span>
+    </div>
+  </div> -->
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous">
+  </script>
+  <script>
+    console.log('startPage');
+  $('#cab').text('Turma: '+datags[0][1]);
+
+  $(function(){
+    //      $(":header").after(this[1]);
+    jQuery.each(datags, function() {
+      $('#myTable tr:last').after('<tr><td><input class="custom-control custom-checkbox mr-sm-2" type = "checkbox" checked ="checked"></input></td><td class="text-primary">' + this[3]+  '</td><td>');
+    })
+  });
+  </script>
+
+  <script>
+    function todos(){
+    var inputs = document.querySelectorAll("input[type='checkbox']");
+    for(var i = 0; i < inputs.length; i++) {
+        inputs[i].checked = true;   
+    }
+  }
+  </script>
+  <script>
+    function limpar() {
+    var inputs = document.querySelectorAll("input[type='checkbox']");
+    for(var i = 0; i < inputs.length; i++) {
+        inputs[i].checked = false;   
+    }
+  }
+  </script>
+  <script>
+    // function spinner(){
+    //   document.getElementsByClassName("loader")[0].style.display = "spinner-border";
+    // }
+
+    function sendDataToServer(){
+      // spinner() 
+      const runGoogleScript = new Promise((resolve, reject) => {
+        var selected = 0;
+        var array = [];
+        var inputs = document.querySelectorAll("input[type='checkbox']:not([id='selecionar'])");
+          for(var i = 0; i < inputs.length; i++) {
+            var sel = inputs[i].checked;
+            if (sel == true){
+              selected = selected + 1
+              if(datags[i]!=null){
+                array.push(JSON.stringify(datags[i]));
+                console.log(" datags["+i+"] = "+datags[i])
+              }
+            }
+          };
+            if(selected==0){
+              $('.toast').toast({delay: 2000, autohide: true});
+              $('.toast').toast('show');
+            return
+            };
+            // array = "["+array+"]"
+            // array = array.toString()
+            // array = array.push(array)
+            console.log(array)
+          
+        google.script.run.withSuccessHandler(data => {
+          alert("Dados enviados ok!")
+          resolve(data)
+          closeIt()
+        }).withFailureHandler(er => {
+          var erro = er+"\n"+array
+          console.log(erro)
+          alert(erro)
+          reject(er)
+        }).addDados(array)      
+      });
+    }
+
+    document.getElementById("enviar").addEventListener("click",sendDataToServer);
+    var checkbox = document.querySelector("input[id=selecionar]");
+    checkbox.addEventListener( 'change', function() {
+        if(this.checked) {
+            // Checkbox is checked..
+            todos();
+        } else {
+            // Checkbox is not checked..
+            limpar();
+        }
+  });
+
+		function Cancelar(){
+      closeIt();
+    }
+
+		function closeIt(){
+      google.script.host.close()
+    };
+  </script>
+
+</body>
+
+</html>
